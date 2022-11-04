@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.hyper_pigeon.musicalallays.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "AllayEntityMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

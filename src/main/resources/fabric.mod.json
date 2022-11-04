@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "musicalallays",
+  "version": "${version}",
+  "name": "MusicalAllays",
+  "description": "A mod that makes Allays a bit more musical~ ",
+  "authors": [
+    "CyborgPigeon"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/musicalallays/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+    ],
+    "main": [
+      "net.hyper_pigeon.musicalallays.MusicalAllays"
+    ]
+  },
+  "mixins": [
+    "musicalallays.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.10",
+    "fabric": "*",
+    "minecraft": "1.19.2"
+  }
+}
