@@ -3,14 +3,17 @@ package net.hyper_pigeon.musicalallays.mixin;
 import net.hyper_pigeon.musicalallays.client.sound.MovingJukeboxSoundInstance;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.AllayBrain;
 import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.MusicDiscItem;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
@@ -20,7 +23,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static java.lang.Math.sqrt;
 
 @Mixin(AllayEntity.class)
 public abstract class AllayEntityMixin extends PathAwareEntity {
@@ -75,14 +81,29 @@ public abstract class AllayEntityMixin extends PathAwareEntity {
         }
     }
 
+    @Inject(method = "tick", at = @At("TAIL"))
+    public void teleportToLikedPlayer(CallbackInfo ci){
+        if (this.getMainHandStack().getItem().equals(Items.JUKEBOX) && distanceFromLikedPlayer((AllayEntity)(Object)this) > 48
+        && !this.isLeashed()){
+            ServerPlayerEntity likedPlayer = AllayBrain.getLikedPlayer((AllayEntity)(Object)(this)).get();
+            this.teleport(likedPlayer.getX(),likedPlayer.getY(),likedPlayer.getZ());
+        }
+    }
 
     //my allay bards keep dying, so allays are now immune to all forms of damage when carrying a jukebox. Might make
     //this configurable?
-    @Inject(method="damage", at = @At("HEAD"))
+    @Inject(method="damage", at = @At("HEAD"), cancellable = true)
     public void immuneToDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
         if(this.getMainHandStack().getItem().equals(Items.JUKEBOX)){
             cir.setReturnValue(false);
         }
+    }
+
+    public double distanceFromLikedPlayer(AllayEntity allayEntity){
+        if(AllayBrain.getLikedPlayer((AllayEntity)(Object)(this)).isPresent()){
+            return allayEntity.getPos().distanceTo(AllayBrain.getLikedPlayer((AllayEntity)(Object)(this)).get().getPos());
+        }
+        return 0;
     }
 
 }
