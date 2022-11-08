@@ -3,7 +3,6 @@ package net.hyper_pigeon.musicalallays.mixin;
 import net.hyper_pigeon.musicalallays.client.sound.MovingJukeboxSoundInstance;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.passive.AllayBrain;
@@ -25,8 +24,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import static java.lang.Math.sqrt;
 
 @Mixin(AllayEntity.class)
 public abstract class AllayEntityMixin extends PathAwareEntity {
@@ -81,17 +78,18 @@ public abstract class AllayEntityMixin extends PathAwareEntity {
         }
     }
 
+    public boolean canTeleport(){
+        return this.getMainHandStack().getItem().equals(Items.JUKEBOX) && distanceFromLikedPlayer((AllayEntity)(Object)this) > 64 && !this.isLeashed();
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     public void teleportToLikedPlayer(CallbackInfo ci){
-        if (this.getMainHandStack().getItem().equals(Items.JUKEBOX) && distanceFromLikedPlayer((AllayEntity)(Object)this) > 48
-        && !this.isLeashed()){
+        if (canTeleport()){
             ServerPlayerEntity likedPlayer = AllayBrain.getLikedPlayer((AllayEntity)(Object)(this)).get();
             this.teleport(likedPlayer.getX(),likedPlayer.getY(),likedPlayer.getZ());
         }
     }
 
-    //my allay bards keep dying, so allays are now immune to all forms of damage when carrying a jukebox. Might make
-    //this configurable?
     @Inject(method="damage", at = @At("HEAD"), cancellable = true)
     public void immuneToDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir){
         if(this.getMainHandStack().getItem().equals(Items.JUKEBOX)){
