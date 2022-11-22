@@ -45,14 +45,14 @@ public abstract class AllayEntityMixin extends PathAwareEntity {
         if (itemStack.isEmpty() && itemStack2.getItem() == Items.JUKEBOX) {
             boolean bl = itemStack2.getOrCreateNbt().contains("RecordItem");
             if (bl) {
-                if(!world.isClient) {
+                if(!world.isClient()) {
                     ItemStack recordItemStack = ItemStack.fromNbt(itemStack2.getOrCreateNbt().getCompound("RecordItem"));
-                    this.world.playSoundFromEntity(player, this, SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.NEUTRAL, 2.0F, 1.0F);
                     this.swingHand(Hand.MAIN_HAND);
                     player.giveItemStack(recordItemStack);
                     itemStack2.getOrCreateNbt().remove("RecordItem");
                 }
                 else {
+                    this.world.playSoundFromEntity(player, this, SoundEvents.ENTITY_ALLAY_ITEM_TAKEN, SoundCategory.NEUTRAL, 2.0F, 1.0F);
                     MinecraftClient.getInstance().getSoundManager().stop(song);
                 }
                 cir.setReturnValue(ActionResult.SUCCESS);
@@ -61,14 +61,16 @@ public abstract class AllayEntityMixin extends PathAwareEntity {
         else if (itemStack.getItem() instanceof MusicDiscItem && itemStack2.getItem() == Items.JUKEBOX) {
             boolean bl = itemStack2.getOrCreateNbt().contains("RecordItem");
             if (!bl) {
+
                 MusicDiscItem musicDiscItem = (MusicDiscItem) itemStack.getItem();
                 itemStack2.getOrCreateNbt().put("RecordItem", itemStack.writeNbt(new NbtCompound()));
                 this.decrementStackUnlessInCreative(player, itemStack);
-                this.world.playSoundFromEntity(player, this, SoundEvents.ENTITY_ALLAY_ITEM_GIVEN, SoundCategory.NEUTRAL, 2.0F, 1.0F);
 
-                song = new MovingJukeboxSoundInstance((AllayEntity) (Object)this,((MusicDiscItem) itemStack.getItem()).getSound());
+                song = new MovingJukeboxSoundInstance((AllayEntity) (Object)this,musicDiscItem.getSound());
 
-                if(world.isClient){
+
+                if(world.isClient()) {
+                    this.world.playSoundFromEntity(player, this, SoundEvents.ENTITY_ALLAY_ITEM_GIVEN, SoundCategory.NEUTRAL, 2.0F, 1.0F);
                     MinecraftClient.getInstance().inGameHud.setRecordPlayingOverlay(musicDiscItem.getDescription());
                     MinecraftClient.getInstance().getSoundManager().playNextTick(song);
                 }
